@@ -1,0 +1,95 @@
+# begin
+
+1. create account + domain
+2. download terraform 
+3. -> digital ocean-> API -> GENREATE new token 
+   -> terminal : export DIGITALOCEAN_TOKEN=.......
+
+4. terraform init 
+initializes your Terraform working directory and prepares it for other Terraform commands.
+When to Run terraform init
+New Project: When you create a new Terraform project, you should run terraform init to set up the working directory.
+
+New Provider or Module: If you add a new provider or module to your configuration files, you should run terraform init to download those resources.
+
+Backend Changes: If you change the backend configuration (e.g., switching from local to remote state storage), run terraform init to reconfigure the backend.
+
+Upgrading Providers: If you update the provider versions in your configuration files, running terraform init will fetch the latest versions.
+
+Corruption or Issues: If you encounter issues with your Terraform environment, it can be helpful to run terraform init again to reset the state or plugins.
+ - terraform fnt  -> bizabet format tb3 el code 
+ - terraform plan => diff locally and what we have in server =>preview the changes that Terraform will make to your infrastructure before applying them
+
+ - terraform apply -> when we made this a terraform.tfstate file will appear -> definition of what terraform already executed  
+## maint.tf explain
+
+the resource contents you get them from digital ocean api -> https://documenter.getpostman.com/view/3854522/S1a7V5Wu#8c8b9646-f34b-4e45-8900-8c4f6e74e17b
+- 
+
+1. list all images available
+```
+curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer ${DIGITALOCEAN_TOKEN}" "https://api.digitalocean.com/v2/images?page=1&per_page=200" | jq '.images[].slug' ```
+
+2. list all regions
+
+```
+curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer ${DIGITALOCEAN_TOKEN}" "https://api.digitalocean.com/v2/regions" | jq '.regions[].slug' ```
+
+
+3. list sizes 
+
+
+curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer ${DIGITALOCEAN_TOKEN}" "https://api.digitalocean.com/v2/sizes" | jq '.sizes[] | {name: .slug , price: .price_monthly}' ```
+
+# doctl use 
+- regions
+doctl compute region list
+
+  
+
+
+# round robin load balancing (we made it in maint.tf   a load balencer between 2 websites) 
+Request 1 goes to Server 1.
+Request 2 goes to Server 2.
+Request 3 goes to Server 1 again.
+Request 4 goes to Server 2, and so on.
+This distribution helps prevent any single server from becoming overwhelmed with too many requests and ensures a more balanced usage of resources.
+
+
+# tf output
+
+
+tf output -raw my-kubeconfig > kubeconfig  && chmod 600 kubeconfig 
+
+export KUBECONFIG=$PWD/kubeconfig
+
+kubectl get nodes 
+
+
+# 
+data "kubernetes_service_v1" "ingress_svc" {
+ depends_on= [helm_release.nginx_ingress]
+ metadata {                                                      
+
+   name=var.nginx_svc_name
+ }
+
+}
+
+
+
+- Purpose:
+This data block retrieves information about the Nginx Ingress controller service installed by the Helm release nginx_ingress. Once this information is retrieved, it can be used elsewhere in your Terraform configuration to reference details like the service’s cluster IP, external IP, load balancer IP, or ports.
+
+Example Use Case:
+Suppose you want to get the external IP address of the Nginx Ingress controller service after it has been deployed. You can use this data block to access that information and use it for configuring DNS records, load balancers, or firewall rules.
+
+
+
+# nginx-ingress-ingress-nginx-controller
+
+Example of How It Might Be Used:
+After deploying the Nginx Ingress controller, you might find a service named like nginx-ingress-ingress-nginx-controller. This service will handle external traffic coming into your cluster and route it to the appropriate services based on Ingress rules you define.
+
+Kubernetes Service: nginx-ingress-ingress-nginx-controller (responsible for routing external HTTP/HTTPS traffic).
+Pod: Could be named something like nginx-ingress-ingress-nginx-controller-xyz123.

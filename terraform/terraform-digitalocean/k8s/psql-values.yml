@@ -1,0 +1,8 @@
+global:
+    storageClass: "do-block-storage"                    -> kubectl get sc 
+
+
+postgesql:
+    username: "test"
+    password: "test123"
+    database: "test_prod"
